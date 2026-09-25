@@ -25,8 +25,8 @@ def monobit_test(bits: str) -> float:
     Частотный побитовый тест.
 
     Каждый бит '1' интерпретируется как +1, '0' как -1. Вычисляется
-    отклонение суммы от нуля и через дополнительную функцию ошибок
-    находится P-значение.
+    модуль отклонения суммы от нуля и через дополнительную функцию
+    ошибок находится P-значение.
 
     Parameters
     ----------
@@ -56,9 +56,10 @@ def runs_test(bits: str) -> float:
 
     Сначала вычисляется доля единиц pi в последовательности.
     Если |pi - 0.5| >= tau, где tau = 2/sqrt(n), тест неприменим и
-    P-значение считается равным нулю (как указано в методичке).
-    Иначе подсчитывается число знакоперемен и по нему вычисляется
-    P-значение через дополнительную функцию ошибок.
+    P-значение считается равным нулю. Иначе подсчитывается число
+    смен битов V (без добавления +1) и по нему вычисляется
+    P-значение через дополнительную функцию ошибок; знаменатель
+    формулы согласно методичке — 2*sqrt(2*n*pi*(1-pi)).
 
     Parameters
     ----------
@@ -81,13 +82,16 @@ def runs_test(bits: str) -> float:
         if abs(pi - 0.5) >= tau:
             return 0.0
 
-        v_obs = 1
-        for i in range(1, n):
-            if bits[i] != bits[i - 1]:
-                v_obs += 1
+        v = 0
+        for i in range(n - 1):
+            if bits[i] != bits[i + 1]:
+                v += 1
 
-        denom = 2 * math.sqrt(2 * n) * pi * (1 - pi)
-        p_value = erfc(abs(v_obs - 2 * n * pi * (1 - pi)) / denom)
+        numerator = abs(v - 2 * n * pi * (1 - pi))
+        denominator = 2 * math.sqrt(2 * n * pi * (1 - pi))
+        if denominator == 0:
+            return 0.0
+        p_value = erfc(numerator / denominator)
         return p_value
     except Exception as e:
         print(f"Ошибка в runs_test: {e}", file=sys.stderr)
