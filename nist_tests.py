@@ -87,8 +87,7 @@ def runs_test(bits: str) -> float:
                 v_obs += 1
 
         denom = 2 * math.sqrt(2 * n) * pi * (1 - pi)
-        z = (v_obs - 2 * n * pi * (1 - pi)) / denom
-        p_value = erfc(abs(z) / math.sqrt(2))
+        p_value = erfc(abs(v_obs - 2 * n * pi * (1 - pi)) / denom)
         return p_value
     except Exception as e:
         print(f"Ошибка в runs_test: {e}", file=sys.stderr)
